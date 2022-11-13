@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -210,6 +211,35 @@ namespace SoftwareStore.Controllers
                 return RedirectToAction("Index");
             }
             return RedirectToAction("Login");
+        }
+
+        //Upload
+        [HttpGet]
+        public IActionResult AddImages()
+        {
+            ViewBag.Products = new SelectList(_context.Products, "Id", "Title");
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddImages(ProductImage pimage, List<IFormFile> Picture)
+        {
+            if (Picture == null)
+            {
+                return View();
+            }
+            var list = new List<ProductImage>();
+            foreach (var item in Picture)
+            {
+                using var ms = new MemoryStream();
+                item.CopyTo(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                var productImage = new ProductImage { ProductId = pimage.ProductId, Picture = ms.ToArray() };
+                list.Add(productImage);
+            }
+            _context.ProductImages.AddRange(list);
+            _context.SaveChanges();
+            return View();
         }
     }
 }

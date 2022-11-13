@@ -32,10 +32,7 @@ namespace SoftwareStore
 		            options.UseSqlServer(Configuration.GetConnectionString("SoftwareStoreContext")));
 
 			//enable session usage
-			services.AddSession(options =>
-			{
-				options.IdleTimeout = TimeSpan.FromSeconds(60);
-			});
+			services.AddSession(options => options.IdleTimeout = TimeSpan.FromSeconds(180));
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,7 +49,10 @@ namespace SoftwareStore
 				app.UseHsts();
 			}
 			app.UseHttpsRedirection();
+
 			app.UseStaticFiles();
+
+			app.UseSession();
 
 			app.UseRouting();
 
