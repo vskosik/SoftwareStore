@@ -3,10 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SoftwareStore.Models
 {
-	public class User
+	public class User: BaseModel
 	{
-		[Key]
-		public int Id { get; set; }
 		[DisplayName("First Name")]
 		public string FirstName { get; set; }
 		[DisplayName("Last Name")]

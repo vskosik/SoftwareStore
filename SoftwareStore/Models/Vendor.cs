@@ -3,12 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SoftwareStore.Models
 {
-    public class Vendor
+    public class Vendor : BaseModel
     {
-        [Key]
-        public int Id { get; set; }
-		[DisplayName("Vendor Name")]
-		public string VendorName { get; set; }
+        [DisplayName("Vendor Name")]
+        public string VendorName { get; set; }
         public string Email { get; set; }
     }
 }
