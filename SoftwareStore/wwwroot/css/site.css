@@ -84,7 +84,7 @@ body {
     box-sizing: border-box;
     border-radius: 2px;
     background-clip: padding-box;
-    min-height: 400px;
+    /*min-height: 400px;*/
 }
 
     .card span.card-title {

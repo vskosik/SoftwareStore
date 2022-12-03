@@ -1,32 +1,19 @@
 ﻿@model IEnumerable<SoftwareStore.Models.Product>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Apps";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Apps</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<div class="card-group d-flex justify-content-around flex-wrap align-content-center">
+<div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center;">
     @foreach (var item in Model)
     {
-        <div class="card" style="margin: 20px; min-width: 20%; max-width: 20%;">
+        <div class="card" style="width: 250px; min-height: 250px; margin: 10px">
+            <img style="height: 200px; width: 200px; margin: 10px auto 0; border: solid 1px; object-fit: fill;" src="..." class="card-img-top" alt="ProductIcon">
             <div class="card-body">
                 <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
                 <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Rate: @Html.DisplayFor(modelItem => item.Rate)</li>
-                    <li class="list-group-item">Price: @Html.DisplayFor(modelItem => item.Price)</li>
-                    <li class="list-group-item">Vendor: @Html.DisplayFor(modelItem => item.Vendor.VendorName)</li>
-                </ul>
-                <div class="card-body">
-                    <a class="card-link" asp-action="Details" asp-route-id="@item.Id">Details</a>
-                    <a class="card-link" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                    <a class="card-link" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </div>
+                <a asp-controller="Products" asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary">Details</a>
             </div>
         </div>
     }

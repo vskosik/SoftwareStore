@@ -41,7 +41,7 @@ namespace SoftwareStore.Repository
 
         public async Task<List<T>> GetAllAsync()
         {
-            return await entities.ToListAsync();
+            return await entities.Include("Vendor").ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(int id)
