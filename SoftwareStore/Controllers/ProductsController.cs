@@ -16,19 +16,21 @@ namespace SoftwareStore.Controllers
 {
     public class ProductsController : Controller
     {
+        private readonly IRepository<Product> repository;
         private readonly SoftwareStoreContext _context;
         private const string LoggedUser = "LoggedUser";
 
-        public ProductsController(SoftwareStoreContext context)
+        public ProductsController(IRepository<Product> repository, SoftwareStoreContext context)
         {
+            this.repository = repository;
             _context = context;
         }
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var softwareStoreContext = _context.Products.Include(p => p.Vendor);
-            return View(await softwareStoreContext.ToListAsync());
+            var softwareStoreContext = await repository.GetAllAsync();
+            return View(softwareStoreContext);
         }
 
         // GET: Products/Details/5
@@ -39,13 +41,13 @@ namespace SoftwareStore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .Include(p => p.Vendor)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await repository.GetByIdAsync((int)id);
             if (product == null)
             {
                 return NotFound();
             }
+
+            ViewBag.Images = _context.ProductImages.Where(p => p.ProductId == id).ToList();
 
             return View(product);
         }
@@ -66,8 +68,7 @@ namespace SoftwareStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                await repository.AddAsync(product);
                 return RedirectToAction(nameof(Index));
             }
             ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id", product.VendorId);
@@ -82,7 +83,7 @@ namespace SoftwareStore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await repository.GetByIdAsync((int)id);
             if (product == null)
             {
                 return NotFound();
@@ -107,8 +108,7 @@ namespace SoftwareStore.Controllers
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    await repository.AddAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -135,9 +135,8 @@ namespace SoftwareStore.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .Include(p => p.Vendor)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await repository.GetByIdAsync((int)id);
+
             if (product == null)
             {
                 return NotFound();
@@ -151,9 +150,7 @@ namespace SoftwareStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
+            await repository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -240,6 +237,7 @@ namespace SoftwareStore.Controllers
             _context.ProductImages.AddRange(list);
             _context.SaveChanges();
             return View();
+            return repository.GetByIdAsync(id) != null;
         }
     }
 }

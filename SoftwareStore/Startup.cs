@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SoftwareStore.Data;
+using SoftwareStore.Repository;
 
 namespace SoftwareStore
 {
@@ -30,6 +31,9 @@ namespace SoftwareStore
 			//register DbContext for database processing and for DI
 		    services.AddDbContext<SoftwareStoreContext>(options =>
 		            options.UseSqlServer(Configuration.GetConnectionString("SoftwareStoreContext")));
+
+			//register DbRepository to use in DI
+			services.AddScoped(typeof(IRepository<>), typeof(DbRepository<>));
 
 			//enable session usage
 			services.AddSession(options => options.IdleTimeout = TimeSpan.FromSeconds(180));

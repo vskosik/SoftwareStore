@@ -3,10 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SoftwareStore.Models
 {
-    public class Product
+    public class Product : BaseModel
     {
-        [Key]
-        public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public double Rate { get; set; }
