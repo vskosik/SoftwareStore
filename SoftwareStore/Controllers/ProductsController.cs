@@ -1,23 +1,23 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using SoftwareStore.Data;
+using SoftwareStore.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using SoftwareStore.Data;
-using SoftwareStore.Models;
 
 namespace SoftwareStore.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly SoftwareStoreContext _context;
-        private const string LOGGED_USER = "LoggedUser";
+        private const string LoggedUser = "LoggedUser";
 
         public ProductsController(SoftwareStoreContext context)
         {
@@ -162,33 +162,33 @@ namespace SoftwareStore.Controllers
             return _context.Products.Any(e => e.Id == id);
         }
 
-		// Register
-		[HttpGet]
-		public IActionResult Register()
-		{
-			return View();
-		}
+        // Register
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
 
-		[HttpPost]
-		public IActionResult Register(User user)
-		{
-			if (user == null)
-			{
-				return RedirectToAction("Register");
-			}
-			user.Password = GetHash(user.Password);
-			_context.Users.Add(user);
-			_context.SaveChanges();
-			return RedirectToAction("Index");
-		}
+        [HttpPost]
+        public IActionResult Register(User user)
+        {
+            if (user == null)
+            {
+                return RedirectToAction("Register");
+            }
+            user.Password = GetHash(user.Password);
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
 
-		public string GetHash(string input)
-		{
-			var md5 = MD5.Create();
-			var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+        public string GetHash(string input)
+        {
+            var md5 = MD5.Create();
+            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
 
-			return Convert.ToBase64String(hash);
-		}
+            return Convert.ToBase64String(hash);
+        }
 
         // Login
         [HttpGet]
@@ -200,14 +200,14 @@ namespace SoftwareStore.Controllers
         [HttpPost]
         public IActionResult Login(User user)
         {
-            var userFromDB = _context.Users.FirstOrDefault(u => u.Email == user.Email);
-            if (userFromDB == null)
+            var userFromDb = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+            if (userFromDb == null)
             {
                 return RedirectToAction("Register");
             }
-            if (GetHash(user.Password) == userFromDB.Password)
+            if (GetHash(user.Password) == userFromDb.Password)
             {
-                HttpContext.Session.SetInt32(LOGGED_USER, userFromDB.Id);
+                HttpContext.Session.SetInt32(LoggedUser, userFromDb.Id);
                 return RedirectToAction("Index");
             }
             return RedirectToAction("Login");
@@ -222,14 +222,14 @@ namespace SoftwareStore.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddImages(ProductImage pimage, List<IFormFile> Picture)
+        public IActionResult AddImages(ProductImage pimage, List<IFormFile> picture)
         {
-            if (Picture == null)
+            if (picture == null)
             {
                 return View();
             }
             var list = new List<ProductImage>();
-            foreach (var item in Picture)
+            foreach (var item in picture)
             {
                 using var ms = new MemoryStream();
                 item.CopyTo(ms);
