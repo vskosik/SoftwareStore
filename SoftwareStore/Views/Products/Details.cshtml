@@ -6,55 +6,7 @@
 }
 <div class="row">
     <div class="col-sm-6 col-md-6 col-lg-6">
-        <div>
-            <h4>Product</h4>
-            <hr />
-            <dl class="row">
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Title)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.Title)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Description)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.Description)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Rate)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.Rate)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Price)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.Price)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.State)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.State)
-                </dd>
-                <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Vendor)
-                </dt>
-                <dd class="col-sm-10">
-                    @Html.DisplayFor(model => model.Vendor.Id)
-                </dd>
-            </dl>
-        </div>
-        <div>
-            <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
-            <a asp-action="Index">Back to List</a>
-        </div>
-    </div>
-    <div class="col-sm-6 col-md-6 col-lg-6">
-        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="3000" style="width:70%;">
+        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="3000" style="width:100%;">
             <ol class="carousel-indicators">
                 @{
                     for (int i = 0; i < ViewBag.Images.Count; i++)
@@ -91,5 +43,40 @@
             </a>
         </div>
     </div>
-</div>
+    <div class="col-sm-6 col-md-6 col-lg-6">
+        <div class="row">
+                <div class="col">
+                    <h2>
+                        @Html.DisplayFor(model => model.Title)
+                    </h2>
+                    <hr />
+                    <h4>
+                        @Html.DisplayNameFor(model => model.Description)
+                    </h4>
+                    <p>
+                        @Html.DisplayFor(model => model.Description)
+                    </p>
+                    <h4>
+                        @Html.DisplayNameFor(model => model.Rate)
+                    </h4>
+                    <p>
+                        @Html.DisplayFor(model => model.Rate)
+                    </p>
+                    <h4>
+                        @Html.DisplayNameFor(model => model.Price)
+                    </h4>
+                    <p>
+                        @Html.DisplayFor(model => model.Price)
+                    </p>
+                    <h4>
+                        @Html.DisplayFor(model => model.Vendor.VendorName)
+                    </h4>
+                </div>
+        </div>
+        <div>
+            <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+            <a class="btn btn-info" asp-action="Index">Back to List</a>
+        </div>
+    </div>
+    
 </div>

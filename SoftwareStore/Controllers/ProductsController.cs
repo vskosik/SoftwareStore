@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SoftwareStore.Data;
 using SoftwareStore.Models;
+using SoftwareStore.Repository;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -237,7 +238,7 @@ namespace SoftwareStore.Controllers
             _context.ProductImages.AddRange(list);
             _context.SaveChanges();
             return View();
-            return repository.GetByIdAsync(id) != null;
+            //return repository.GetByIdAsync(id) != null;
         }
     }
 }
