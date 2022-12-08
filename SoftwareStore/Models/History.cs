@@ -11,6 +11,7 @@ namespace SoftwareStore.Models
         [ForeignKey("FK_User_1234")]
         public int UserId { get; set; }
         public int Price { get; set; }
+        public int Qty { get; set; }
         [DataType(DataType.Date)]
         public DateTime PurchaseDate { get; set; }
 

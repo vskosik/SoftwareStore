@@ -9,6 +9,7 @@ namespace SoftwareStore.Models
         public int ProductId { get; set; }
         [ForeignKey("FK_User_123")]
         public int UserId { get; set; }
+        public int Qty { get; set; }
         //virtual properties
         public Product Product { get; set; }
         public User User { get; set; }

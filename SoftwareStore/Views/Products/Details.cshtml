@@ -74,8 +74,8 @@
                 </div>
         </div>
         <div>
-            <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-            <a class="btn btn-info" asp-action="Index">Back to List</a>
+            <a asp-controller="Users" asp-action="AddToCart" asp-route-id="@Model.Id" class="btn btn-info">Add To Cart</a>
+            <a asp-action="Index" class="btn btn-primary">Back To Shopping</a>
         </div>
     </div>
     

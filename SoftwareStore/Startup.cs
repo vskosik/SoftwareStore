@@ -36,7 +36,7 @@ namespace SoftwareStore
 			services.AddScoped(typeof(IRepository<>), typeof(DbRepository<>));
 
 			//enable session usage
-			services.AddSession(options => options.IdleTimeout = TimeSpan.FromSeconds(180));
+			services.AddSession(options => options.IdleTimeout = TimeSpan.FromSeconds(600));
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

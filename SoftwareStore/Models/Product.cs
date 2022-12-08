@@ -11,7 +11,7 @@ namespace SoftwareStore.Models
         public int Price { get; set; }
         [ForeignKey("FK_Vendor_1")]
         public int VendorId { get; set; }
-        public int State { get; set; }
+        public int Qty { get; set; }
         //virtual properties
         public Vendor Vendor { get; set; }
 

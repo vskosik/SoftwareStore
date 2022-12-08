@@ -17,7 +17,6 @@ namespace SoftwareStore.Controllers
     {
         private readonly IRepository<ProductImage> repository;
         private readonly SoftwareStoreContext _context;
-        private const string LOGGED_USER = "LoggedUser";
 
         public AdminController(IRepository<ProductImage> repository, SoftwareStoreContext context)
         {
@@ -56,57 +55,6 @@ namespace SoftwareStore.Controllers
             _context.ProductImages.AddRange(list);
             _context.SaveChanges();
             return View();
-        }
-
-        // Register
-        [HttpGet]
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public IActionResult Register(User user)
-        {
-            if (user == null)
-            {
-                return RedirectToAction("Register");
-            }
-            user.Password = GetHash(user.Password);
-            _context.Users.Add(user);
-            _context.SaveChanges();
-            return RedirectToAction("Index", "Products");
-        }
-
-        public string GetHash(string input)
-        {
-            var md5 = MD5.Create();
-            var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-            return Convert.ToBase64String(hash);
-        }
-
-        // Login
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public IActionResult Login(User user)
-        {
-            var userFromDB = _context.Users.FirstOrDefault(u => u.Email == user.Email);
-            if (userFromDB == null)
-            {
-                return RedirectToAction("Register");
-            }
-            if (GetHash(user.Password) == userFromDB.Password)
-            {
-                HttpContext.Session.SetInt32(LOGGED_USER, userFromDB.Id);
-                return RedirectToAction("Index", "Products");
-            }
-            return RedirectToAction("Login");
         }
     }
 }
