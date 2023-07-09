@@ -74,8 +74,10 @@
                 </div>
         </div>
         <div>
-            <a asp-controller="Users" asp-action="AddToCart" asp-route-id="@Model.Id" class="btn btn-info">Add To Cart</a>
-            <a asp-action="Index" class="btn btn-primary">Back To Shopping</a>
+            <form method="post" asp-controller="Users" asp-action="AddToCart" asp-route-id="@Model.Id">
+                <input type="submit" class="btn btn-info" value="Add To Cart" />
+                <a asp-action="Index" class="btn btn-primary">Back To Shopping</a>
+            </form>
         </div>
     </div>
     

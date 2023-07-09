@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SoftwareStore.Controllers
 {
@@ -25,8 +26,8 @@ namespace SoftwareStore.Controllers
             return View();
         }
 
-        //AddToCart
-        [HttpGet]
+        // AddToCart POST: Users/AddToCart/2
+        [HttpPost]
         public IActionResult AddToCart(int? id)
         {
             int? loggegUserId = HttpContext.Session.GetInt32(LoggedUser);
@@ -36,24 +37,47 @@ namespace SoftwareStore.Controllers
                 return RedirectToAction("Login");
             }
 
-            var cart = _context.Carts.Where(cart => cart.UserId == loggegUserId);
+            var cart = _context.Carts.FirstOrDefault(cart => cart.UserId == loggegUserId && cart.ProductId == id);
 
-            if (cart == null && id != null)
+            if (cart != null)
             {
-                var newCart = new Cart { ProductId = (int)id, UserId = (int)loggegUserId, Qty = 1 };
-                _context.Carts.Add(newCart);
-                _context.SaveChanges();
+                cart.Qty++;
+                _context.Entry<Cart>(cart).State = EntityState.Modified;
+            }
+            else
+            {
+                cart = new Cart { ProductId = (int)id, UserId = (int)loggegUserId, Qty = 1 };
+                _context.Carts.Add(cart);
+            }
+            
+            _context.SaveChanges();
+
+            return RedirectToAction("ViewCart", "Users");
+        }
+
+        // View Cart GET: Users/ViewCart/3
+        [HttpGet]
+        public IActionResult ViewCart()
+        {
+            int? loggegUserId = HttpContext.Session.GetInt32(LoggedUser);
+
+            if (loggegUserId == null)
+            {
+                return RedirectToAction("Login");
             }
 
-            List<Cart> selectedCart = _context.Carts.Where(c => c.UserId == (int)loggegUserId).ToList();
+            var carts = _context.Carts.Where(cart => cart.UserId == loggegUserId).ToList();
+
             List<Product> products = new List<Product>();
-            foreach (Cart item in selectedCart)
+
+            foreach (Cart item in carts)
             {
                 var product = _context.Products.Include(p => p.Vendor).
                     Where(p => p.Id == item.ProductId).FirstOrDefault();
                 product.Qty = item.Qty;
                 products.Add(product);
             }
+
             return View(products);
         }
 
@@ -70,6 +94,17 @@ namespace SoftwareStore.Controllers
             _context.SaveChanges();
         }
 
+        // POST: Products/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public void Delete(int id)
+        {
+            int? userId = HttpContext.Session.GetInt32(LoggedUser);
+            var cart = _context.Carts.Where(c => c.ProductId == id &&
+                c.UserId == (int)userId).FirstOrDefault();
+            _context.Carts.Remove(cart);
+        }
+
         // Register
         [HttpGet]
         public IActionResult Register()
@@ -84,6 +119,11 @@ namespace SoftwareStore.Controllers
             {
                 return RedirectToAction("Register");
             }
+            if (_context.Users.Any(u => u.Email == user.Email))
+            {
+                return RedirectToAction("Register");
+            }
+
             user.Password = GetHash(user.Password);
             _context.Users.Add(user);
             _context.SaveChanges();
@@ -118,6 +158,7 @@ namespace SoftwareStore.Controllers
                 HttpContext.Session.SetInt32(LoggedUser, userFromDB.Id);
                 return RedirectToAction("Index", "Products");
             }
+
             return RedirectToAction("Login");
         }
     }

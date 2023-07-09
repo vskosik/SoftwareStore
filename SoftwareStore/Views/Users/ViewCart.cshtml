@@ -1,15 +1,12 @@
 ﻿@model IEnumerable<SoftwareStore.Models.Product>
 
 @{
-    ViewData["Title"] = "AddToCart";
+    ViewData["Title"] = "My Cart";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>AddToCart</h1>
+<h1>My Cart</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
@@ -58,9 +55,11 @@
                     @Html.DisplayFor(modelItem => item.Vendor.VendorName)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <form asp-action="Delete">
+                        <a asp-controller="Products" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        <input type="hidden" asp-for="@item.Id" />
+                        <input type="submit" asp-for="@item.Id" value="Delete" />
+                    </form>
                 </td>
             </tr>
         }
