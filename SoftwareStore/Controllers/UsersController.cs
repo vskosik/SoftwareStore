@@ -10,70 +10,74 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace SoftwareStore.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly SoftwareStoreContext _context;
+        private readonly CartRepository _cartRepository;
+        private readonly ProductRepository _productRepository;
+        private readonly UserRepository _userRepository;
         private const string LoggedUser = "LoggedUser";
-        public UsersController(SoftwareStoreContext context)
+
+        public UsersController(CartRepository cartRepository, ProductRepository productRepository,
+            UserRepository userRepository)
         {
-            this._context = context;
+            this._cartRepository = cartRepository;
+            this._productRepository = productRepository;
+            this._userRepository = userRepository;
         }
-        public IActionResult Index()
+        /*public IActionResult Index()
         {
             return View();
-        }
+        }*/
 
         // AddToCart POST: Users/AddToCart/2
         [HttpPost]
-        public IActionResult AddToCart(int? id)
+        public async Task<IActionResult> AddToCart(int? id)
         {
-            int? loggegUserId = HttpContext.Session.GetInt32(LoggedUser);
+            var loggedUserId = HttpContext.Session.GetInt32(LoggedUser);
 
-            if (loggegUserId == null)
+            if (loggedUserId == null)
             {
                 return RedirectToAction("Login");
             }
 
-            var cart = _context.Carts.FirstOrDefault(cart => cart.UserId == loggegUserId && cart.ProductId == id);
+            var cart = _cartRepository.Find((int)loggedUserId, (int)id).Result;
 
             if (cart != null)
             {
                 cart.Qty++;
-                _context.Entry<Cart>(cart).State = EntityState.Modified;
+                await _cartRepository.UpdateAsync(cart.Id, cart);
             }
             else
             {
-                cart = new Cart { ProductId = (int)id, UserId = (int)loggegUserId, Qty = 1 };
-                _context.Carts.Add(cart);
+                cart = new Cart { ProductId = (int)id, UserId = (int)loggedUserId, Qty = 1 };
+                await _cartRepository.AddAsync(cart);
             }
-            
-            _context.SaveChanges();
 
             return RedirectToAction("ViewCart", "Users");
         }
 
-        // View Cart GET: Users/ViewCart/3
+        // View Cart GET: Users/ViewCart/
         [HttpGet]
-        public IActionResult ViewCart()
+        public async Task<IActionResult> ViewCart()
         {
-            int? loggegUserId = HttpContext.Session.GetInt32(LoggedUser);
+            var loggedUserId = HttpContext.Session.GetInt32(LoggedUser);
 
-            if (loggegUserId == null)
+            if (loggedUserId == null)
             {
                 return RedirectToAction("Login");
             }
 
-            var carts = _context.Carts.Where(cart => cart.UserId == loggegUserId).ToList();
+            var carts = _cartRepository.Find((int)loggedUserId).ToList();
 
-            List<Product> products = new List<Product>();
+            var products = new List<Product>();
 
-            foreach (Cart item in carts)
+            foreach (var item in carts)
             {
-                var product = _context.Products.Include(p => p.Vendor).
-                    Where(p => p.Id == item.ProductId).FirstOrDefault();
+                var product = await _productRepository.GetByIdAsync(item.ProductId);
                 product.Qty = item.Qty;
                 products.Add(product);
             }
@@ -81,55 +85,71 @@ namespace SoftwareStore.Controllers
             return View(products);
         }
 
+        // POST: Change Item Qty In Runtime
         [HttpPost]
-        public void ChangeCartAjax(string productId, string Qty)
+        public async Task<IActionResult> ChangeCartAjax(string productId, string Qty)
         {
-            int prodId = int.Parse(productId);
-            int qty = int.Parse(Qty);
-            int? userId = HttpContext.Session.GetInt32(LoggedUser);
-            var cart = _context.Carts.Where(c => c.ProductId == prodId &&
-                c.UserId == (int)userId).FirstOrDefault();
+            var prodId = int.Parse(productId);
+            var qty = int.Parse(Qty);
+            var userId = HttpContext.Session.GetInt32(LoggedUser);
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var cart = _cartRepository.Find((int)userId, prodId).Result;
             cart.Qty = qty;
-            _context.Entry<Cart>(cart).State = EntityState.Modified;
-            _context.SaveChanges();
+
+            await _cartRepository.UpdateAsync(cart.Id, cart);
+
+            return RedirectToAction("ViewCart");
         }
 
-        // POST: Products/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: Users/DeleteItem/5
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public void Delete(int id)
+        public async Task<IActionResult> DeleteItem(int id)
         {
-            int? userId = HttpContext.Session.GetInt32(LoggedUser);
-            var cart = _context.Carts.Where(c => c.ProductId == id &&
-                c.UserId == (int)userId).FirstOrDefault();
-            _context.Carts.Remove(cart);
+            var userId = HttpContext.Session.GetInt32(LoggedUser);
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var cart = _cartRepository.Find((int)userId, id).Result;
+            await _cartRepository.DeleteAsync(cart.Id);
+
+            return RedirectToAction("ViewCart");
         }
 
-        // Register
+        // GET: Users/Register/
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
+        // POST Users/Register/{User}
         [HttpPost]
-        public IActionResult Register(User user)
+        public async Task<IActionResult> Register(User user)
         {
             if (user == null)
             {
                 return RedirectToAction("Register");
             }
-            if (_context.Users.Any(u => u.Email == user.Email))
+            if (_userRepository.IsExist(user.Email).Result)
             {
                 return RedirectToAction("Register");
             }
 
             user.Password = GetHash(user.Password);
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            await _userRepository.AddAsync(user);
             return RedirectToAction("Index", "Products");
         }
 
+        // Get Password Hash
         public string GetHash(string input)
         {
             var md5 = MD5.Create();
@@ -138,28 +158,30 @@ namespace SoftwareStore.Controllers
             return Convert.ToBase64String(hash);
         }
 
-        // Login
+        // GET: Users/Login/
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
+        // POST: Users/Login/{User}
         [HttpPost]
         public IActionResult Login(User user)
         {
-            var userFromDB = _context.Users.FirstOrDefault(u => u.Email == user.Email);
-            if (userFromDB == null)
+            var userFromDb = _userRepository.Find(user.Email).Result;
+            if (userFromDb == null)
             {
                 return RedirectToAction("Register");
             }
-            if (GetHash(user.Password) == userFromDB.Password)
+
+            if (GetHash(user.Password) != userFromDb.Password)
             {
-                HttpContext.Session.SetInt32(LoggedUser, userFromDB.Id);
-                return RedirectToAction("Index", "Products");
+                return RedirectToAction("Login");
             }
 
-            return RedirectToAction("Login");
+            HttpContext.Session.SetInt32(LoggedUser, userFromDb.Id);
+            return RedirectToAction("Index", "Products");
         }
     }
 }

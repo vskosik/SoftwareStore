@@ -17,19 +17,22 @@ namespace SoftwareStore.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly IRepository<Product> repository;
+        private readonly ProductRepository _productRepository;
+        private readonly IRepository<ProductImage> _productImageRepository;
         private readonly SoftwareStoreContext _context;
 
-        public ProductsController(IRepository<Product> repository, SoftwareStoreContext context)
+        public ProductsController(ProductRepository productRepository, SoftwareStoreContext context, IRepository<ProductImage> productImageRepository)
         {
-            this.repository = repository;
+            this._productRepository = productRepository;
             _context = context;
+            _productImageRepository = productImageRepository;
         }
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var softwareStoreContext = await repository.GetAllAsync();
+            var softwareStoreContext = await _productRepository.GetAllAsync();
+            ViewBag.Thumbnails = await _productImageRepository.GetAllAsync();
             return View(softwareStoreContext);
         }
 
@@ -41,7 +44,7 @@ namespace SoftwareStore.Controllers
                 return NotFound();
             }
 
-            var product = await repository.GetByIdAsync((int)id);
+            var product = await _productRepository.GetByIdAsync((int)id);
             if (product == null)
             {
                 return NotFound();
@@ -68,7 +71,7 @@ namespace SoftwareStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                await repository.AddAsync(product);
+                await _productRepository.AddAsync(product);
                 return RedirectToAction(nameof(Index));
             }
             ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id", product.VendorId);
@@ -83,7 +86,7 @@ namespace SoftwareStore.Controllers
                 return NotFound();
             }
 
-            var product = await repository.GetByIdAsync((int)id);
+            var product = await _productRepository.GetByIdAsync((int)id);
             if (product == null)
             {
                 return NotFound();
@@ -108,7 +111,7 @@ namespace SoftwareStore.Controllers
             {
                 try
                 {
-                    await repository.AddAsync(product);
+                    await _productRepository.AddAsync(product);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -135,7 +138,7 @@ namespace SoftwareStore.Controllers
                 return NotFound();
             }
 
-            var product = await repository.GetByIdAsync((int)id);
+            var product = await _productRepository.GetByIdAsync((int)id);
 
             if (product == null)
             {
@@ -150,7 +153,7 @@ namespace SoftwareStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await repository.DeleteAsync(id);
+            await _productRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 

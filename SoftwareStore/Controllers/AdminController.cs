@@ -15,18 +15,18 @@ namespace SoftwareStore.Controllers
 {
     public class AdminController : Controller
     {
-        private readonly IRepository<ProductImage> repository;
+        private readonly IRepository<ProductImage> _repository;
         private readonly SoftwareStoreContext _context;
 
         public AdminController(IRepository<ProductImage> repository, SoftwareStoreContext context)
         {
-            this.repository = repository;
+            this._repository = repository;
             _context = context;
         }
-        public IActionResult Index()
+        /*public IActionResult Index()
         {
             return View();
-        }
+        }*/
 
         //Upload
         [HttpGet]
@@ -37,19 +37,19 @@ namespace SoftwareStore.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddImages(ProductImage pimage, List<IFormFile> Picture)
+        public IActionResult AddImages(ProductImage prodImage, List<IFormFile> picture)
         {
-            if (Picture == null)
+            if (picture == null)
             {
                 return View();
             }
             var list = new List<ProductImage>();
-            foreach (var item in Picture)
+            foreach (var item in picture)
             {
                 using var ms = new MemoryStream();
                 item.CopyTo(ms);
                 ms.Seek(0, SeekOrigin.Begin);
-                var productImage = new ProductImage { ProductId = pimage.ProductId, Picture = ms.ToArray() };
+                var productImage = new ProductImage { ProductId = prodImage.ProductId, Picture = ms.ToArray() };
                 list.Add(productImage);
             }
             _context.ProductImages.AddRange(list);

@@ -8,13 +8,13 @@ namespace SoftwareStore.Repository
 {
     public class DbRepository<T> : IRepository<T> where T : BaseModel
     {
-        private readonly SoftwareStoreContext _context;
-        private readonly DbSet<T> entities;
+        protected readonly SoftwareStoreContext context;
+        protected readonly DbSet<T> entities;
 
         public DbRepository(SoftwareStoreContext context)
         {
-            _context = context;
-            entities = _context.Set<T>();
+            this.context = context;
+            entities = this.context.Set<T>();
         }
 
         public async Task<T> AddAsync(T model)
@@ -24,7 +24,7 @@ namespace SoftwareStore.Repository
                 return null;
             }
             await entities.AddAsync(model);
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return model;
         }
 
@@ -36,12 +36,12 @@ namespace SoftwareStore.Repository
                 return;
             }
             entities.Remove(item);
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         public async Task<List<T>> GetAllAsync()
         {
-            return await entities.Include("Vendor").ToListAsync();
+            return await entities.ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(int id)
@@ -58,8 +58,8 @@ namespace SoftwareStore.Repository
             }
             item = model;
             item.Id = id;
-            _context.Entry(item).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            context.Entry(item).State = EntityState.Modified;
+            await context.SaveChangesAsync();
             return item;
         }
     }

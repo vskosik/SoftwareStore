@@ -8,8 +8,13 @@
 <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center;">
     @foreach (var item in Model)
     {
+        var img = (ViewBag.Thumbnails as List<ProductImage>)!
+            .FirstOrDefault(pImage => pImage.ProductId == item.Id)!.Picture;
+        var b64 = Convert.ToBase64String(img);
+        b64 = "data:image/png;base64," + b64;
+
         <div class="card" style="width: 250px; min-height: 250px; margin: 10px">
-            <img style="height: 200px; width: 200px; margin: 10px auto 0; border: solid 1px; object-fit: fill;" src="..." class="card-img-top" alt="ProductIcon">
+            <img style="height: 200px; width: 200px; margin: 20px auto 0; padding: 20px; object-fit: fill;" src="@b64" class="card-img-top" alt="ProductIcon">
             <div class="card-body">
                 <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
                 <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>

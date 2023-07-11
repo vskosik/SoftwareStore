@@ -6,17 +6,17 @@ namespace SoftwareStore.Repository
 {
     public interface IRepository<T> where T : BaseModel
     {
-        //Create async
+        // Create async
         Task<T> AddAsync(T model);
 
-        //Read async
+        // Read async
         Task<List<T>> GetAllAsync();
         Task<T> GetByIdAsync(int id);
 
-        //Update
+        // Update
         Task<T> UpdateAsync(int id, T model);
 
-        //Delete
+        // Delete
         Task DeleteAsync(int id);
     }
 }
