@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace SoftwareStore.Controllers
 {
@@ -89,19 +90,32 @@ namespace SoftwareStore.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangeCartAjax(string productId, string Qty)
         {
-            var prodId = int.Parse(productId);
-            var qty = int.Parse(Qty);
-            var userId = HttpContext.Session.GetInt32(LoggedUser);
+            if (!int.TryParse(productId, out var prodId) || !int.TryParse(Qty, out var qty))
+            {
+                return BadRequest("Invalid product ID or quantity."); // Add appropriate error handling here
+            }
 
+            var userId = HttpContext.Session.GetInt32(LoggedUser);
             if (userId == null)
             {
                 return RedirectToAction("Login");
             }
 
-            var cart = _cartRepository.Find((int)userId, prodId).Result;
-            cart.Qty = qty;
+            var cart = await _cartRepository.Find((int)userId, prodId);
+            if (cart == null)
+            {
+                return NotFound("Cart item not found."); // Add appropriate error handling here
+            }
 
-            await _cartRepository.UpdateAsync(cart.Id, cart);
+            if (qty == 0)
+            {
+                await _cartRepository.DeleteAsync(cart.Id);
+            }
+            else
+            {
+                cart.Qty = qty;
+                await _cartRepository.UpdateAsync(cart.Id, cart);
+            }
 
             return RedirectToAction("ViewCart");
         }
