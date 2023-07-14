@@ -1,6 +1,6 @@
-﻿using SoftwareStore.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using SoftwareStore.Models;
 
 namespace SoftwareStore.Repository
 {

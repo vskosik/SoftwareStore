@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SoftwareStore.Data;
-using SoftwareStore.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using SoftwareStore.Data;
+using SoftwareStore.Models;
 
 namespace SoftwareStore.Repository
 {

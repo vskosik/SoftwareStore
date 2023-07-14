@@ -1,33 +1,29 @@
-﻿using SoftwareStore.Data;
-using SoftwareStore.Models;
-using SoftwareStore.Repository;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Query;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SoftwareStore.Models;
+using SoftwareStore.Repository;
 
 namespace SoftwareStore.Controllers
 {
     public class UsersController : Controller
     {
+        private const string LoggedUser = "LoggedUser";
         private readonly CartRepository _cartRepository;
         private readonly ProductRepository _productRepository;
         private readonly UserRepository _userRepository;
-        private const string LoggedUser = "LoggedUser";
 
         public UsersController(CartRepository cartRepository, ProductRepository productRepository,
             UserRepository userRepository)
         {
-            this._cartRepository = cartRepository;
-            this._productRepository = productRepository;
-            this._userRepository = userRepository;
+            _cartRepository = cartRepository;
+            _productRepository = productRepository;
+            _userRepository = userRepository;
         }
         /*public IActionResult Index()
         {
@@ -45,7 +41,7 @@ namespace SoftwareStore.Controllers
                 return RedirectToAction("Login");
             }
 
-            var cart = _cartRepository.Find((int)loggedUserId, (int)id).Result;
+            var cart = await _cartRepository.Find((int)loggedUserId, (int)id);
 
             if (cart != null)
             {
@@ -132,7 +128,7 @@ namespace SoftwareStore.Controllers
                 return RedirectToAction("Login");
             }
 
-            var cart = _cartRepository.Find((int)userId, id).Result;
+            var cart = await _cartRepository.Find((int)userId, id);
             await _cartRepository.DeleteAsync(cart.Id);
 
             return RedirectToAction("ViewCart");
@@ -153,13 +149,17 @@ namespace SoftwareStore.Controllers
             {
                 return RedirectToAction("Register");
             }
-            if (_userRepository.IsExist(user.Email).Result)
+
+            if (await _userRepository.IsExist(user.Email))
             {
                 return RedirectToAction("Register");
             }
 
             user.Password = GetHash(user.Password);
             await _userRepository.AddAsync(user);
+            HttpContext.Session.SetInt32("LoggedUser", user.Id);
+            HttpContext.Session.SetString("UserRole", user.Role);
+            HttpContext.Session.SetString("UserEmail", user.Email);
             return RedirectToAction("Index", "Products");
         }
 
@@ -181,9 +181,9 @@ namespace SoftwareStore.Controllers
 
         // POST: Users/Login/{User}
         [HttpPost]
-        public IActionResult Login(User user)
+        public async Task<IActionResult> Login(User user)
         {
-            var userFromDb = _userRepository.Find(user.Email).Result;
+            var userFromDb = await _userRepository.Find(user.Email);
             if (userFromDb == null)
             {
                 return RedirectToAction("Register");
@@ -194,7 +194,17 @@ namespace SoftwareStore.Controllers
                 return RedirectToAction("Login");
             }
 
-            HttpContext.Session.SetInt32(LoggedUser, userFromDb.Id);
+            HttpContext.Session.SetInt32("LoggedUser", userFromDb.Id);
+            HttpContext.Session.SetString("UserRole", userFromDb.Role);
+            HttpContext.Session.SetString("UserEmail", userFromDb.Email);
+            return RedirectToAction("Index", "Products");
+        }
+
+        // GET: Users/Logout/
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
             return RedirectToAction("Index", "Products");
         }
     }

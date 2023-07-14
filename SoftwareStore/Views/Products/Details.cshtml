@@ -1,4 +1,4 @@
-﻿@model SoftwareStore.Models.Product
+﻿@model Product
 
 @{
     ViewData["Title"] = "Details";
@@ -45,40 +45,40 @@
     </div>
     <div class="col-sm-6 col-md-6 col-lg-6">
         <div class="row">
-                <div class="col">
-                    <h2>
-                        @Html.DisplayFor(model => model.Title)
-                    </h2>
-                    <hr />
-                    <h4>
-                        @Html.DisplayNameFor(model => model.Description)
-                    </h4>
-                    <p>
-                        @Html.DisplayFor(model => model.Description)
-                    </p>
-                    <h4>
-                        @Html.DisplayNameFor(model => model.Rate)
-                    </h4>
-                    <p>
-                        @Html.DisplayFor(model => model.Rate)
-                    </p>
-                    <h4>
-                        @Html.DisplayNameFor(model => model.Price)
-                    </h4>
-                    <p>
-                        @Html.DisplayFor(model => model.Price)
-                    </p>
-                    <h4>
-                        @Html.DisplayFor(model => model.Vendor.VendorName)
-                    </h4>
-                </div>
+            <div class="col">
+                <h2>
+                    @Html.DisplayFor(model => model.Title)
+                </h2>
+                <hr/>
+                <h4>
+                    @Html.DisplayNameFor(model => model.Description)
+                </h4>
+                <p>
+                    @Html.DisplayFor(model => model.Description)
+                </p>
+                <h4>
+                    @Html.DisplayNameFor(model => model.Rate)
+                </h4>
+                <p>
+                    @Html.DisplayFor(model => model.Rate)
+                </p>
+                <h4>
+                    @Html.DisplayNameFor(model => model.Price)
+                </h4>
+                <p>
+                    @Html.DisplayFor(model => model.Price)
+                </p>
+                <h4>
+                    @Html.DisplayFor(model => model.Vendor.VendorName)
+                </h4>
+            </div>
         </div>
         <div>
             <form method="post" asp-controller="Users" asp-action="AddToCart" asp-route-id="@Model.Id">
-                <input type="submit" class="btn btn-warning" value="Add To Cart" />
+                <input type="submit" class="btn btn-warning" value="Add To Cart"/>
                 <a asp-action="Index" class="btn btn-primary">Back To Shopping</a>
             </form>
         </div>
     </div>
-    
+
 </div>

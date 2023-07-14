@@ -1,32 +1,24 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Collections.Generic;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SoftwareStore.Data;
 using SoftwareStore.Models;
 using SoftwareStore.Repository;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace SoftwareStore.Controllers
 {
     public class AdminController : Controller
     {
-        private readonly IRepository<ProductImage> _repository;
         private readonly SoftwareStoreContext _context;
+        private readonly IRepository<ProductImage> _repository;
 
         public AdminController(IRepository<ProductImage> repository, SoftwareStoreContext context)
         {
-            this._repository = repository;
+            _repository = repository;
             _context = context;
         }
-        /*public IActionResult Index()
-        {
-            return View();
-        }*/
 
         //Upload
         [HttpGet]
@@ -43,6 +35,7 @@ namespace SoftwareStore.Controllers
             {
                 return View();
             }
+
             var list = new List<ProductImage>();
             foreach (var item in picture)
             {
@@ -52,9 +45,10 @@ namespace SoftwareStore.Controllers
                 var productImage = new ProductImage { ProductId = prodImage.ProductId, Picture = ms.ToArray() };
                 list.Add(productImage);
             }
+
             _context.ProductImages.AddRange(list);
             _context.SaveChanges();
-            return View();
+            return RedirectToAction("Details", "Products", new { Id = prodImage.ProductId });
         }
     }
 }

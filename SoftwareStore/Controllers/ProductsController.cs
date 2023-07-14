@@ -1,29 +1,25 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SoftwareStore.Data;
 using SoftwareStore.Models;
 using SoftwareStore.Repository;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SoftwareStore.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly ProductRepository _productRepository;
-        private readonly IRepository<ProductImage> _productImageRepository;
         private readonly SoftwareStoreContext _context;
+        private readonly IRepository<ProductImage> _productImageRepository;
+        private readonly ProductRepository _productRepository;
 
-        public ProductsController(ProductRepository productRepository, SoftwareStoreContext context, IRepository<ProductImage> productImageRepository)
+        public ProductsController(ProductRepository productRepository, SoftwareStoreContext context,
+            IRepository<ProductImage> productImageRepository)
         {
-            this._productRepository = productRepository;
+            _productRepository = productRepository;
             _context = context;
             _productImageRepository = productImageRepository;
         }
@@ -67,13 +63,16 @@ namespace SoftwareStore.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,Rate,Price,VendorId,State")] Product product)
+        public async Task<IActionResult> Create(
+            [Bind("Id,Title,Description,Rate,Price,VendorId,State")]
+            Product product)
         {
             if (ModelState.IsValid)
             {
                 await _productRepository.AddAsync(product);
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id", product.VendorId);
             return View(product);
         }
@@ -91,6 +90,7 @@ namespace SoftwareStore.Controllers
             {
                 return NotFound();
             }
+
             ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id", product.VendorId);
             return View(product);
         }
@@ -100,7 +100,9 @@ namespace SoftwareStore.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Rate,Price,VendorId,State")] Product product)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,Title,Description,Rate,Price,VendorId,State")]
+            Product product)
         {
             if (id != product.Id)
             {
@@ -119,13 +121,13 @@ namespace SoftwareStore.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id", product.VendorId);
             return View(product);
         }
@@ -149,10 +151,16 @@ namespace SoftwareStore.Controllers
         }
 
         // POST: Products/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
+        [ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            if (HttpContext.Session.GetString("UserRole") != "Admin")
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
             await _productRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }

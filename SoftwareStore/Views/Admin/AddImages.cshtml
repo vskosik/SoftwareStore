@@ -5,25 +5,23 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>AddImages</h1>
-
-<h4>ProductImage</h4>
-<hr />
+<h1>Add Images</h1>
+<hr/>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="AddImages" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="ProductId" class="control-label"></label>
-                <select asp-for="ProductId" class ="form-control" asp-items="ViewBag.Products"></select>
+                <label asp-for="ProductId" class="control-label">Product</label>
+                <select asp-for="ProductId" class="form-control" asp-items="ViewBag.Products"></select>
             </div>
             <div class="form-group">
                 <label asp-for="Picture" class="control-label"></label>
-                <input name="Picture" type="file" class="form-control" multiple/>
+                <input name="Picture" type="file" style="height: auto" class="form-control" multiple/>
                 <span asp-validation-for="Picture" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Add" class="btn btn-primary"/>
             </div>
         </form>
     </div>
@@ -34,5 +32,5 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

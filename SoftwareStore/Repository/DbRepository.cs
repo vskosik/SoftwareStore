@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using SoftwareStore.Data;
 using SoftwareStore.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SoftwareStore.Repository
 {
@@ -23,6 +23,7 @@ namespace SoftwareStore.Repository
             {
                 return null;
             }
+
             await entities.AddAsync(model);
             await context.SaveChangesAsync();
             return model;
@@ -35,6 +36,7 @@ namespace SoftwareStore.Repository
             {
                 return;
             }
+
             entities.Remove(item);
             await context.SaveChangesAsync();
         }
@@ -56,6 +58,7 @@ namespace SoftwareStore.Repository
             {
                 return null;
             }
+
             item = model;
             item.Id = id;
             context.Entry(item).State = EntityState.Modified;
