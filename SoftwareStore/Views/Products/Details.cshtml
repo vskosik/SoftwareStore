@@ -69,8 +69,11 @@
                     @Html.DisplayFor(model => model.Price)
                 </p>
                 <h4>
-                    @Html.DisplayFor(model => model.Vendor.VendorName)
+                    @Html.DisplayNameFor(model => model.Vendor.VendorName)
                 </h4>
+                <p>
+                    @Html.DisplayFor(model => model.Vendor.VendorName)
+                </p>
             </div>
         </div>
         <div>

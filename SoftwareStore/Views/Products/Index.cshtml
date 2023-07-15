@@ -29,6 +29,7 @@
                         <a asp-controller="Products" asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary">Details</a>
                         @if (Context.Session.GetString("UserRole") == "Admin")
                         {
+                            <a asp-controller="Products" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
                             <a asp-controller="Products" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Delete</a>
                         }
                     </div>

@@ -91,7 +91,7 @@ namespace SoftwareStore.Controllers
                 return NotFound();
             }
 
-            ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id", product.VendorId);
+            ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "VendorName", product.VendorId);
             return View(product);
         }
 
@@ -101,8 +101,7 @@ namespace SoftwareStore.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
-            [Bind("Id,Title,Description,Rate,Price,VendorId,State")]
-            Product product)
+            [Bind("Id,Title,Description,Rate,Price,VendorId,Qty,State")] Product product)
         {
             if (id != product.Id)
             {
@@ -113,7 +112,7 @@ namespace SoftwareStore.Controllers
             {
                 try
                 {
-                    await _productRepository.AddAsync(product);
+                    await _productRepository.UpdateAsync(product.Id, product);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -128,7 +127,7 @@ namespace SoftwareStore.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id", product.VendorId);
+            ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "VendorName", product.VendorId);
             return View(product);
         }
 
