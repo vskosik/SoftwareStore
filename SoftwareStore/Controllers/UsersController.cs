@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using SoftwareStore.Models;
 using SoftwareStore.Repository;
 
@@ -206,6 +208,125 @@ namespace SoftwareStore.Controllers
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Products");
+        }
+
+        private bool IsAdmin()
+        {
+            return HttpContext.Session.GetString("UserRole") == "Admin";
+        }
+
+        // GET: Users/AllUsers/
+        [HttpGet]
+        public async Task<IActionResult> AllUsers()
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login");
+            }
+
+            var users = await _userRepository.GetAllAsync();
+            return View(users);
+        }
+
+        // GET: Users/Edit/2
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userRepository.GetByIdAsync((int)id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        // POST: Users/Edit/2
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,FirstName,LastName,Email,Password,Role")]
+            User user)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (id != user.Id)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(user);
+            }
+
+            try
+            {
+                await _userRepository.UpdateAsync(user.Id, user);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _userRepository.IsExist(user.Email))
+                {
+                    return NotFound();
+                }
+
+                throw;
+            }
+
+            return RedirectToAction("AllUsers");
+        }
+
+        // GET: Users/Delete/2
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _userRepository.GetByIdAsync((int)id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        // POST: Users/Delete/2
+        [HttpPost]
+        [ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login");
+            }
+
+            await _userRepository.DeleteAsync(id);
+            return RedirectToAction("AllUsers");
         }
     }
 }

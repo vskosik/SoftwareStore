@@ -39,5 +39,9 @@ namespace SoftwareStore.Repository
             return item;
         }
 
+        public async Task<bool> IsExist(int id)
+        {
+            return await entities.AnyAsync(product => product.Id == id);
+        }
     }
 }

@@ -20,17 +20,28 @@ namespace SoftwareStore.Controllers
             _context = context;
         }
 
-        //Upload
+        // GET: Admin/AddImage/
         [HttpGet]
         public IActionResult AddImages()
         {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
             ViewBag.Products = new SelectList(_context.Products, "Id", "Title");
             return View();
         }
 
+        // POST: Admin/AddImage/{Pictures}
         [HttpPost]
         public IActionResult AddImages(ProductImage prodImage, List<IFormFile> picture)
         {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
             if (picture == null)
             {
                 return View();
@@ -49,6 +60,11 @@ namespace SoftwareStore.Controllers
             _context.ProductImages.AddRange(list);
             _context.SaveChanges();
             return RedirectToAction("Details", "Products", new { Id = prodImage.ProductId });
+        }
+
+        private bool IsAdmin()
+        {
+            return HttpContext.Session.GetString("UserRole") == "Admin";
         }
     }
 }

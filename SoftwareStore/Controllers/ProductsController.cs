@@ -54,32 +54,47 @@ namespace SoftwareStore.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
-            ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id");
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "VendorName");
             return View();
         }
-
+        
         // POST: Products/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Id,Title,Description,Rate,Price,VendorId,State")]
+            [Bind("Id,Title,Description,Rate,Price,VendorId,Qty,State")]
             Product product)
         {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
             if (ModelState.IsValid)
             {
                 await _productRepository.AddAsync(product);
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "Id", product.VendorId);
+            ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "VendorName", product.VendorId);
             return View(product);
         }
 
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -101,8 +116,14 @@ namespace SoftwareStore.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
-            [Bind("Id,Title,Description,Rate,Price,VendorId,Qty,State")] Product product)
+            [Bind("Id,Title,Description,Rate,Price,VendorId,Qty,State")]
+            Product product)
         {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
             if (id != product.Id)
             {
                 return NotFound();
@@ -116,7 +137,7 @@ namespace SoftwareStore.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!await _productRepository.IsExist(id))
                     {
                         return NotFound();
                     }
@@ -134,6 +155,11 @@ namespace SoftwareStore.Controllers
         // GET: Products/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            if (!IsAdmin())
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -155,7 +181,7 @@ namespace SoftwareStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (HttpContext.Session.GetString("UserRole") != "Admin")
+            if (!IsAdmin())
             {
                 return RedirectToAction("Login", "Users");
             }
@@ -164,9 +190,9 @@ namespace SoftwareStore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(int id)
+        private bool IsAdmin()
         {
-            return _context.Products.Any(e => e.Id == id);
+            return HttpContext.Session.GetString("UserRole") == "Admin";
         }
     }
 }

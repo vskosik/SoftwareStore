@@ -5,82 +5,83 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div class="row">
-    <div class="col-sm-6 col-md-6 col-lg-6">
-        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="3000" style="width:100%;">
-            <ol class="carousel-indicators">
-                @{
-                    for (var i = 0; i < ViewBag.Images.Count; i++)
-                    {
-                        <li data-target="#carouselExampleIndicators" data-slide-to="@(i.ToString())" @(i == 1 ? "class='active'" : "")></li>
-                    }
-                }
-            </ol>
-            <div class="carousel-inner">
-                @{
-                    for (var i = 1; i <= ViewBag.Images.Count; i++)
-                    {
-                        <div class="carousel-@(i == 1 ? "item active" : "item")">
-                            @{
-                                byte[] img = ViewBag.Images[i - 1].Picture;
+    <div class="col-lg-6 d-flex">
+        <div class="card flex-grow-1">
+            <div class="card-body">
+                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="3000">
+                    <ol class="carousel-indicators">
+                        @{
+                            for (var i = 0; i < ViewBag.Images.Count; i++)
+                            {
+                                <li data-target="#carouselExampleIndicators" data-slide-to="@i" class="@(i == 0 ? "active" : "")"></li>
+                            }
+                        }
+                    </ol>
+                    <div class="carousel-inner">
+                        @{
+                            for (var i = 0; i < ViewBag.Images.Count; i++)
+                            {
+                                byte[] img = ViewBag.Images[i].Picture;
                                 var b64 = Convert.ToBase64String(img);
                                 b64 = "data:image/png;base64," + b64;
+                                <div class="carousel-item @(i == 0 ? "active" : "")">
+                                    <img class="d-block w-75 h-auto mx-auto" src="@b64" alt="Product Image @i">
+                                </div>
                             }
-                            <img class="mx-auto d-block" style="width: 300px; height: 300px; margin-top: 20px" src="@b64" alt="Product Image">
-                            <div class="carousel-caption d-none d-md-block">
-                                Picture @i
-                            </div>
-                        </div>
-                    }
-                }
+                        }
+                    </div>
+                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" style="filter: invert(100%) hue-rotate(360deg)" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" style="filter: invert(100%) hue-rotate(360deg)" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
             </div>
-            <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="sr-only">Next</span>
-            </a>
         </div>
     </div>
-    <div class="col-sm-6 col-md-6 col-lg-6">
-        <div class="row">
-            <div class="col">
-                <h2>
-                    @Html.DisplayFor(model => model.Title)
-                </h2>
-                <hr/>
-                <h4>
-                    @Html.DisplayNameFor(model => model.Description)
-                </h4>
-                <p>
-                    @Html.DisplayFor(model => model.Description)
-                </p>
-                <h4>
-                    @Html.DisplayNameFor(model => model.Rate)
-                </h4>
-                <p>
-                    @Html.DisplayFor(model => model.Rate)
-                </p>
-                <h4>
-                    @Html.DisplayNameFor(model => model.Price)
-                </h4>
-                <p>
-                    @Html.DisplayFor(model => model.Price)
-                </p>
-                <h4>
-                    @Html.DisplayNameFor(model => model.Vendor.VendorName)
-                </h4>
-                <p>
-                    @Html.DisplayFor(model => model.Vendor.VendorName)
-                </p>
+    <div class="col-lg-6 d-flex">
+        <div class="card flex-grow-1">
+            <div class="card-body d-flex flex-column">
+                <div>
+                    <h2 class="card-title">
+                        @Html.DisplayFor(model => model.Title)
+                    </h2>
+                    <hr />
+                    <h4 class="card-subtitle mb-2 text-muted">
+                        @Html.DisplayNameFor(model => model.Description)
+                    </h4>
+                    <p class="card-text">
+                        @Html.DisplayFor(model => model.Description)
+                    </p>
+                    <h4 class="card-subtitle mb-2 text-muted">
+                        @Html.DisplayNameFor(model => model.Rate)
+                    </h4>
+                    <p class="card-text">
+                        @Html.DisplayFor(model => model.Rate)
+                    </p>
+                    <h4 class="card-subtitle mb-2 text-muted">
+                        @Html.DisplayNameFor(model => model.Price)
+                    </h4>
+                    <p class="card-text">
+                        @Html.DisplayFor(model => model.Price)
+                    </p>
+                    <h4 class="card-subtitle mb-2 text-muted">
+                        @Html.DisplayNameFor(model => model.Vendor.VendorName)
+                    </h4>
+                    <p class="card-text">
+                        @Html.DisplayFor(model => model.Vendor.VendorName)
+                    </p>
+                </div>
+                <div class="mt-auto">
+                    <form method="post" asp-controller="Users" asp-action="AddToCart" asp-route-id="@Model.Id" class="d-flex justify-content-end">
+                        <input type="submit" class="btn btn-warning mr-2" value="Add To Cart" />
+                        <a asp-action="Index" class="btn btn-primary">Back To Shopping</a>
+                    </form>
+                </div>
             </div>
-        </div>
-        <div>
-            <form method="post" asp-controller="Users" asp-action="AddToCart" asp-route-id="@Model.Id">
-                <input type="submit" class="btn btn-warning" value="Add To Cart"/>
-                <a asp-action="Index" class="btn btn-primary">Back To Shopping</a>
-            </form>
         </div>
     </div>
 
