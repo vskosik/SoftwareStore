@@ -33,6 +33,7 @@ namespace SoftwareStore
             services.AddScoped(typeof(UserRepository), typeof(UserRepository));
             services.AddScoped(typeof(ProductRepository), typeof(ProductRepository));
             services.AddScoped(typeof(CartRepository), typeof(CartRepository));
+            services.AddScoped(typeof(HistoryRepository), typeof(HistoryRepository));
 
             //enable session usage
             services.AddSession(options => options.IdleTimeout = TimeSpan.FromSeconds(600));

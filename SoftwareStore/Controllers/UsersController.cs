@@ -15,17 +15,18 @@ namespace SoftwareStore.Controllers
 {
     public class UsersController : Controller
     {
-        private const string LoggedUser = "LoggedUser";
         private readonly CartRepository _cartRepository;
         private readonly ProductRepository _productRepository;
         private readonly UserRepository _userRepository;
+        private readonly HistoryRepository _historyRepository;
 
         public UsersController(CartRepository cartRepository, ProductRepository productRepository,
-            UserRepository userRepository)
+            UserRepository userRepository, HistoryRepository historyRepository)
         {
             _cartRepository = cartRepository;
             _productRepository = productRepository;
             _userRepository = userRepository;
+            _historyRepository = historyRepository;
         }
         /*public IActionResult Index()
         {
@@ -36,7 +37,7 @@ namespace SoftwareStore.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(int? id)
         {
-            var loggedUserId = HttpContext.Session.GetInt32(LoggedUser);
+            var loggedUserId = HttpContext.Session.GetInt32("LoggedUser");
 
             if (loggedUserId == null)
             {
@@ -63,7 +64,7 @@ namespace SoftwareStore.Controllers
         [HttpGet]
         public async Task<IActionResult> ViewCart()
         {
-            var loggedUserId = HttpContext.Session.GetInt32(LoggedUser);
+            var loggedUserId = HttpContext.Session.GetInt32("LoggedUser");
 
             if (loggedUserId == null)
             {
@@ -90,10 +91,10 @@ namespace SoftwareStore.Controllers
         {
             if (!int.TryParse(productId, out var prodId) || !int.TryParse(Qty, out var qty))
             {
-                return BadRequest("Invalid product ID or quantity."); // Add appropriate error handling here
+                return BadRequest("Invalid product ID or quantity.");
             }
 
-            var userId = HttpContext.Session.GetInt32(LoggedUser);
+            var userId = HttpContext.Session.GetInt32("LoggedUser");
             if (userId == null)
             {
                 return RedirectToAction("Login");
@@ -102,7 +103,7 @@ namespace SoftwareStore.Controllers
             var cart = await _cartRepository.Find((int)userId, prodId);
             if (cart == null)
             {
-                return NotFound("Cart item not found."); // Add appropriate error handling here
+                return NotFound("Cart item not found.");
             }
 
             if (qty == 0)
@@ -123,7 +124,7 @@ namespace SoftwareStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteItem(int id)
         {
-            var userId = HttpContext.Session.GetInt32(LoggedUser);
+            var userId = HttpContext.Session.GetInt32("LoggedUser");
 
             if (userId == null)
             {
@@ -215,6 +216,11 @@ namespace SoftwareStore.Controllers
             return HttpContext.Session.GetString("UserRole") == "Admin";
         }
 
+        private bool IsLogged(int id)
+        {
+            return HttpContext.Session.GetInt32("LoggedUser") == id;
+        }
+
         // GET: Users/AllUsers/
         [HttpGet]
         public async Task<IActionResult> AllUsers()
@@ -231,14 +237,9 @@ namespace SoftwareStore.Controllers
         // GET: Users/Edit/2
         public async Task<IActionResult> Edit(int? id)
         {
-            if (!IsAdmin())
+            if (!IsAdmin() && !IsLogged((int)id))
             {
                 return RedirectToAction("Login");
-            }
-
-            if (id == null)
-            {
-                return NotFound();
             }
 
             var user = await _userRepository.GetByIdAsync((int)id);
@@ -259,7 +260,7 @@ namespace SoftwareStore.Controllers
             [Bind("Id,FirstName,LastName,Email,Password,Role")]
             User user)
         {
-            if (!IsAdmin())
+            if (!IsAdmin() && !IsLogged(id))
             {
                 return RedirectToAction("Login");
             }
@@ -288,20 +289,15 @@ namespace SoftwareStore.Controllers
                 throw;
             }
 
-            return RedirectToAction("AllUsers");
+            return RedirectToAction(IsLogged(id) ? "ViewProfile" : "AllUsers");
         }
 
         // GET: Users/Delete/2
         public async Task<IActionResult> Delete(int? id)
         {
-            if (!IsAdmin())
+            if (!IsAdmin() && !IsLogged((int)id))
             {
                 return RedirectToAction("Login");
-            }
-
-            if (id == null)
-            {
-                return NotFound();
             }
 
             var user = await _userRepository.GetByIdAsync((int)id);
@@ -320,13 +316,53 @@ namespace SoftwareStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (!IsAdmin())
+            if (!IsAdmin() && !IsLogged(id))
             {
                 return RedirectToAction("Login");
             }
 
             await _userRepository.DeleteAsync(id);
-            return RedirectToAction("AllUsers");
+
+            if (IsAdmin())
+            {
+                return RedirectToAction("AllUsers");
+            }
+
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
+
+        }
+
+        // GET: Users/ViewProfile/
+        [HttpGet]
+        public async Task<IActionResult> ViewProfile()
+        {
+            var loggedUserId = HttpContext.Session.GetInt32("LoggedUser");
+
+            if (loggedUserId == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var user = await _userRepository.GetByIdAsync((int)loggedUserId);
+
+            return View(user);
+        }
+
+        // GET Users/History/
+        [HttpGet]
+        public async Task<IActionResult> History()
+        {
+            var loggedUserId = HttpContext.Session.GetInt32("LoggedUser");
+
+            if (loggedUserId == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var history = _historyRepository.Find((int)loggedUserId).ToList();
+
+            return View(history);
         }
     }
 }

@@ -22,8 +22,14 @@
                     <ul class="navbar-nav ml-auto">
                         @if (Context.Session.GetInt32("LoggedUser") != null)
                         {
-                            <li class="nav-item">
-                                <span class="nav-link">@Context.Session.GetString("UserEmail")</span>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    @Context.Session.GetString("UserEmail")
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="profileDropdown">
+                                    <a class="dropdown-item" asp-area="" asp-controller="Users" asp-action="ViewProfile">View Profile</a>
+                                    <a class="dropdown-item" asp-area="" asp-controller="Users" asp-action="History">History</a>
+                                </div>
                             </li>
                             if (Context.Session.GetString("UserRole") == "Admin")
                             {

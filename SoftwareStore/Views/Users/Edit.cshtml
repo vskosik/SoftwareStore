@@ -1,4 +1,5 @@
-﻿@model SoftwareStore.Models.User
+﻿@using Microsoft.AspNetCore.Http
+@model SoftwareStore.Models.User
 
 @{
     ViewData["Title"] = "Edit";
@@ -33,11 +34,14 @@
                 <input asp-for="Password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Role" class="control-label"></label>
-                <input asp-for="Role" class="form-control" />
-                <span asp-validation-for="Role" class="text-danger"></span>
-            </div>
+            @if (Model.Role == "Admin")
+            {
+                <div class="form-group">
+                    <label asp-for="Role" class="control-label"></label>
+                    <input asp-for="Role" class="form-control" />
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+            }
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
@@ -47,7 +51,14 @@
 </div>
 
 <div>
-    <a asp-action="AllUsers">Back to List</a>
+    @if (Context.Session.GetString("UserRole") == "Admin")
+    {
+        <a asp-action="AllUsers">Back</a>
+    }
+    else
+    {
+        <a asp-action="ViewProfile">Back</a>
+    }
 </div>
 
 @section Scripts {
