@@ -349,9 +349,9 @@ namespace SoftwareStore.Controllers
             return View(user);
         }
 
-        // GET Users/History/
+        // GET: Users/History/
         [HttpGet]
-        public async Task<IActionResult> History()
+        public IActionResult History()
         {
             var loggedUserId = HttpContext.Session.GetInt32("LoggedUser");
 
@@ -363,6 +363,39 @@ namespace SoftwareStore.Controllers
             var history = _historyRepository.Find((int)loggedUserId).ToList();
 
             return View(history);
+        }
+
+        // POST: Users/Checkout/
+        [HttpPost]
+        public async Task<IActionResult> Checkout()
+        {
+            var loggedUserId = HttpContext.Session.GetInt32("LoggedUser");
+
+            if (loggedUserId == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var carts = _cartRepository.Find((int)loggedUserId).ToList();
+
+            foreach (var history in carts.Select(async cart => new History()
+            {
+                ProductId = cart.ProductId,
+                UserId = cart.UserId,
+                Price = (await _productRepository.GetByIdAsync(cart.ProductId)).Price,
+                Qty = cart.Qty,
+                PurchaseDate = DateTime.Now
+            }))
+            {
+                await _historyRepository.AddAsync(await history);
+            }
+
+            foreach (var cart in carts)
+            {
+                await _cartRepository.DeleteAsync(cart.Id);
+            }
+
+            return RedirectToAction("History");
         }
     }
 }
