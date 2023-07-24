@@ -6,7 +6,7 @@ using SoftwareStore.Models;
 
 namespace SoftwareStore.Repository
 {
-    public class ProductRepository : DbRepository<Product>
+    public class ProductRepository : DbRepository<Product>, IProductRepository
     {
         public ProductRepository(SoftwareStoreContext context) : base(context) { }
 
@@ -37,11 +37,6 @@ namespace SoftwareStore.Repository
 
             await context.SaveChangesAsync();
             return item;
-        }
-
-        public async Task<bool> IsExist(int id)
-        {
-            return await entities.AnyAsync(product => product.Id == id);
         }
     }
 }

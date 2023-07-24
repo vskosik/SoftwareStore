@@ -7,7 +7,7 @@ using SoftwareStore.Models;
 
 namespace SoftwareStore.Repository
 {
-    public class CartRepository : DbRepository<Cart>
+    public class CartRepository : DbRepository<Cart>, ICartRepository
     {
         public CartRepository(SoftwareStoreContext context) : base(context) { }
 

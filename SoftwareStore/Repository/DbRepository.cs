@@ -65,5 +65,10 @@ namespace SoftwareStore.Repository
             await context.SaveChangesAsync();
             return item;
         }
+
+        public async Task<bool> IsExist(int id)
+        {
+            return await entities.AnyAsync(entity => entity.Id == id);
+        }
     }
 }

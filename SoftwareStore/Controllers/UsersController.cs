@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using SoftwareStore.Models;
 using SoftwareStore.Repository;
 
@@ -15,23 +17,21 @@ namespace SoftwareStore.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly CartRepository _cartRepository;
-        private readonly ProductRepository _productRepository;
-        private readonly UserRepository _userRepository;
-        private readonly HistoryRepository _historyRepository;
+        private readonly ICartRepository _cartRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IHistoryRepository _historyRepository;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(CartRepository cartRepository, ProductRepository productRepository,
-            UserRepository userRepository, HistoryRepository historyRepository)
+        public UsersController(ICartRepository cartRepository, IProductRepository productRepository,
+            IUserRepository userRepository, IHistoryRepository historyRepository, ILogger<UsersController> logger)
         {
             _cartRepository = cartRepository;
             _productRepository = productRepository;
             _userRepository = userRepository;
             _historyRepository = historyRepository;
+            _logger = logger;
         }
-        /*public IActionResult Index()
-        {
-            return View();
-        }*/
 
         // AddToCart POST: Users/AddToCart/2
         [HttpPost]
@@ -41,6 +41,7 @@ namespace SoftwareStore.Controllers
 
             if (loggedUserId == null)
             {
+                _logger.LogInformation("User try to AddToCart without logging in.");
                 return RedirectToAction("Login");
             }
 
@@ -50,11 +51,13 @@ namespace SoftwareStore.Controllers
             {
                 cart.Qty++;
                 await _cartRepository.UpdateAsync(cart.Id, cart);
+                _logger.LogInformation($"Product(id: {cart.ProductId}) qty in cart(id: {cart.Id}) changed.");
             }
             else
             {
                 cart = new Cart { ProductId = (int)id, UserId = (int)loggedUserId, Qty = 1 };
                 await _cartRepository.AddAsync(cart);
+                _logger.LogInformation($"Product(id: {(int)id}) added to cart.");
             }
 
             return RedirectToAction("ViewCart", "Users");
@@ -68,6 +71,7 @@ namespace SoftwareStore.Controllers
 
             if (loggedUserId == null)
             {
+                _logger.LogInformation("User try to ViewCart without logging in.");
                 return RedirectToAction("Login");
             }
 
@@ -91,29 +95,36 @@ namespace SoftwareStore.Controllers
         {
             if (!int.TryParse(productId, out var prodId) || !int.TryParse(Qty, out var qty))
             {
+                _logger.LogError("Invalid product ID or quantity.");
                 return BadRequest("Invalid product ID or quantity.");
             }
 
             var userId = HttpContext.Session.GetInt32("LoggedUser");
             if (userId == null)
             {
+
+                _logger.LogInformation("User try to ChangeQty without logging in.");
                 return RedirectToAction("Login");
             }
 
             var cart = await _cartRepository.Find((int)userId, prodId);
             if (cart == null)
             {
+                _logger.LogError("Cart item not found.");
                 return NotFound("Cart item not found.");
             }
 
             if (qty == 0)
             {
+                _logger.LogInformation($"Cart(id: {cart.Id}) is about to be deleted.");
                 await _cartRepository.DeleteAsync(cart.Id);
+                _logger.LogInformation("Cart deleted.");
             }
             else
             {
                 cart.Qty = qty;
                 await _cartRepository.UpdateAsync(cart.Id, cart);
+                _logger.LogInformation($"Item(id: {cart.ProductId} qty in cart(id: {cart.Id}) changed.");
             }
 
             return RedirectToAction("ViewCart");
@@ -128,11 +139,14 @@ namespace SoftwareStore.Controllers
 
             if (userId == null)
             {
+                _logger.LogInformation("User try to DeleteItem without logging in.");
                 return RedirectToAction("Login");
             }
 
             var cart = await _cartRepository.Find((int)userId, id);
+            _logger.LogInformation($"Cart(id: {cart.Id}) is about to be deleted.");
             await _cartRepository.DeleteAsync(cart.Id);
+            _logger.LogInformation("Cart deleted.");
 
             return RedirectToAction("ViewCart");
         }
@@ -150,16 +164,19 @@ namespace SoftwareStore.Controllers
         {
             if (user == null)
             {
+                _logger.LogInformation("User didn't enter all fields.");
                 return RedirectToAction("Register");
             }
 
             if (await _userRepository.IsExist(user.Email))
             {
+                _logger.LogInformation("User already exist.");
                 return RedirectToAction("Register");
             }
 
             user.Password = GetHash(user.Password);
             await _userRepository.AddAsync(user);
+            _logger.LogInformation($"User(email: {user.Email}) added to database.");
             HttpContext.Session.SetInt32("LoggedUser", user.Id);
             HttpContext.Session.SetString("UserRole", user.Role);
             HttpContext.Session.SetString("UserEmail", user.Email);
@@ -189,17 +206,20 @@ namespace SoftwareStore.Controllers
             var userFromDb = await _userRepository.Find(user.Email);
             if (userFromDb == null)
             {
+                _logger.LogInformation("User doesn't exist.");
                 return RedirectToAction("Register");
             }
 
             if (GetHash(user.Password) != userFromDb.Password)
             {
+                _logger.LogInformation("Incorrect password.");
                 return RedirectToAction("Login");
             }
 
             HttpContext.Session.SetInt32("LoggedUser", userFromDb.Id);
             HttpContext.Session.SetString("UserRole", userFromDb.Role);
             HttpContext.Session.SetString("UserEmail", userFromDb.Email);
+            _logger.LogInformation($"User(id: {userFromDb.Id}) logged in.");
             return RedirectToAction("Index", "Products");
         }
 
@@ -208,6 +228,7 @@ namespace SoftwareStore.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
+            _logger.LogInformation("Session cleared.");
             return RedirectToAction("Index", "Products");
         }
 
@@ -227,6 +248,7 @@ namespace SoftwareStore.Controllers
         {
             if (!IsAdmin())
             {
+                _logger.LogInformation("User is not an admin.");
                 return RedirectToAction("Login");
             }
 
@@ -239,16 +261,18 @@ namespace SoftwareStore.Controllers
         {
             if (!IsAdmin() && !IsLogged((int)id))
             {
+                _logger.LogInformation($"Access restricted for editing user(id: {(int)id}).");
                 return RedirectToAction("Login");
             }
 
             var user = await _userRepository.GetByIdAsync((int)id);
-            if (user == null)
+            if (user != null)
             {
-                return NotFound();
+                return View(user);
             }
 
-            return View(user);
+            _logger.LogError("User not found.");
+            return NotFound();
         }
 
         // POST: Users/Edit/2
@@ -262,33 +286,40 @@ namespace SoftwareStore.Controllers
         {
             if (!IsAdmin() && !IsLogged(id))
             {
+                _logger.LogInformation($"Access restricted for editing user(id: {(int)id}).");
                 return RedirectToAction("Login");
             }
 
             if (id != user.Id)
             {
+                _logger.LogError("User not found.");
                 return NotFound();
             }
 
             if (!ModelState.IsValid)
             {
+                _logger.LogError("Invalid Model.");
                 return View(user);
             }
 
             try
             {
+                _logger.LogDebug($"Updating user(id: {user.Id}).");
                 await _userRepository.UpdateAsync(user.Id, user);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException dbException)
             {
                 if (!await _userRepository.IsExist(user.Email))
                 {
+                    _logger.LogError("User doesn't exist.");
                     return NotFound();
                 }
 
+                _logger.LogError(dbException, "Something went wrong.");
                 throw;
             }
 
+            _logger.LogInformation($"User(id: {user.Id}) updated.");
             return RedirectToAction(IsLogged(id) ? "ViewProfile" : "AllUsers");
         }
 
@@ -297,17 +328,20 @@ namespace SoftwareStore.Controllers
         {
             if (!IsAdmin() && !IsLogged((int)id))
             {
+                _logger.LogInformation($"Access restricted for deleting user(id: {(int)id}).");
                 return RedirectToAction("Login");
             }
 
             var user = await _userRepository.GetByIdAsync((int)id);
 
-            if (user == null)
+            if (user != null)
             {
-                return NotFound();
+                return View(user);
             }
 
-            return View(user);
+            _logger.LogInformation("User doesn't exist.");
+            return NotFound();
+
         }
 
         // POST: Users/Delete/2
@@ -318,10 +352,13 @@ namespace SoftwareStore.Controllers
         {
             if (!IsAdmin() && !IsLogged(id))
             {
+                _logger.LogInformation($"Access restricted for deleting user(id: {(int)id}).");
                 return RedirectToAction("Login");
             }
 
+            _logger.LogInformation($"User(id: {id}) is about to be deleted.");
             await _userRepository.DeleteAsync(id);
+            _logger.LogInformation("User deleted.");
 
             if (IsAdmin())
             {
@@ -329,6 +366,7 @@ namespace SoftwareStore.Controllers
             }
 
             HttpContext.Session.Clear();
+            _logger.LogInformation("Session cleared.");
             return RedirectToAction("Login");
 
         }
@@ -341,6 +379,7 @@ namespace SoftwareStore.Controllers
 
             if (loggedUserId == null)
             {
+                _logger.LogInformation("User try to ViewProfile without logging in.");
                 return RedirectToAction("Login");
             }
 
@@ -357,6 +396,7 @@ namespace SoftwareStore.Controllers
 
             if (loggedUserId == null)
             {
+                _logger.LogInformation("User try to view History without logging in.");
                 return RedirectToAction("Login");
             }
 
@@ -373,6 +413,7 @@ namespace SoftwareStore.Controllers
 
             if (loggedUserId == null)
             {
+                _logger.LogInformation("User try to proceed to Checkout without logging in.");
                 return RedirectToAction("Login");
             }
 
@@ -388,11 +429,14 @@ namespace SoftwareStore.Controllers
             }))
             {
                 await _historyRepository.AddAsync(await history);
+                _logger.LogInformation($"User(id: {(await history).UserId}) complete purchase(product id: {(await history).ProductId}).");
             }
 
             foreach (var cart in carts)
             {
+                _logger.LogInformation($"Cart(id: {cart.Id}) is about to be deleted.");
                 await _cartRepository.DeleteAsync(cart.Id);
+                _logger.LogInformation("Cart deleted.");
             }
 
             return RedirectToAction("History");

@@ -2,12 +2,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using SoftwareStore.Data;
 using SoftwareStore.Models;
 
 namespace SoftwareStore.Repository
 {
-    public class HistoryRepository : DbRepository<History>
+    public class HistoryRepository : DbRepository<History>, IHistoryRepository
     {
         public HistoryRepository(SoftwareStoreContext context) : base(context) { }
 

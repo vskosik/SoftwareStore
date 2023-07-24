@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SoftwareStore.Data;
 using SoftwareStore.Models;
 using SoftwareStore.Repository;
@@ -14,14 +15,16 @@ namespace SoftwareStore.Controllers
     {
         private readonly SoftwareStoreContext _context;
         private readonly IRepository<ProductImage> _productImageRepository;
-        private readonly ProductRepository _productRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(ProductRepository productRepository, SoftwareStoreContext context,
-            IRepository<ProductImage> productImageRepository)
+        public ProductsController(IProductRepository productRepository, SoftwareStoreContext context,
+            IRepository<ProductImage> productImageRepository, ILogger<ProductsController> logger)
         {
             _productRepository = productRepository;
             _context = context;
             _productImageRepository = productImageRepository;
+            _logger = logger;
         }
 
         // GET: Products

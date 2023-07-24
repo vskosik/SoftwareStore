@@ -5,7 +5,7 @@ using SoftwareStore.Models;
 
 namespace SoftwareStore.Repository
 {
-    public class UserRepository : DbRepository<User>
+    public class UserRepository : DbRepository<User>, IUserRepository
     {
         public UserRepository(SoftwareStoreContext context) : base(context) { }
 

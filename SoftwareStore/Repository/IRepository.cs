@@ -18,5 +18,7 @@ namespace SoftwareStore.Repository
 
         // Delete
         Task DeleteAsync(int id);
+
+        Task<bool> IsExist(int id);
     }
 }

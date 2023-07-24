@@ -30,10 +30,11 @@ namespace SoftwareStore
 
             //register DbRepository to use in DI
             services.AddScoped(typeof(IRepository<>), typeof(DbRepository<>));
-            services.AddScoped(typeof(UserRepository), typeof(UserRepository));
-            services.AddScoped(typeof(ProductRepository), typeof(ProductRepository));
-            services.AddScoped(typeof(CartRepository), typeof(CartRepository));
-            services.AddScoped(typeof(HistoryRepository), typeof(HistoryRepository));
+            services.AddScoped<ICartRepository, CartRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IHistoryRepository, HistoryRepository>();
+
 
             //enable session usage
             services.AddSession(options => options.IdleTimeout = TimeSpan.FromSeconds(600));
