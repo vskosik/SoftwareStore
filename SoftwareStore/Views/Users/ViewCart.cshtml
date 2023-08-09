@@ -99,7 +99,7 @@
                     type: "post",
                     url: "/Users/ChangeCartAjax",
                     data: { productId: $(this).prev('input').val(), Qty: $(this).val() },
-                    success: function (data) {
+                    success: function () {
                         location.reload();
                     }
                 });

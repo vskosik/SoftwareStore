@@ -26,7 +26,7 @@ namespace SoftwareStore
 
             //register DbContext for database processing and for DI
             services.AddDbContext<SoftwareStoreContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("SoftwareStoreContext")));
+                options.UseSqlServer(Configuration.GetConnectionString("SoftwareStoreContext")!));
 
             //register DbRepository to use in DI
             services.AddScoped(typeof(IRepository<>), typeof(DbRepository<>));

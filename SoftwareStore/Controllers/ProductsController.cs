@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SoftwareStore.Data;
 using SoftwareStore.Models;
 using SoftwareStore.Repository;
@@ -16,15 +15,13 @@ namespace SoftwareStore.Controllers
         private readonly SoftwareStoreContext _context;
         private readonly IRepository<ProductImage> _productImageRepository;
         private readonly IProductRepository _productRepository;
-        private readonly ILogger<ProductsController> _logger;
 
         public ProductsController(IProductRepository productRepository, SoftwareStoreContext context,
-            IRepository<ProductImage> productImageRepository, ILogger<ProductsController> logger)
+            IRepository<ProductImage> productImageRepository)
         {
             _productRepository = productRepository;
             _context = context;
             _productImageRepository = productImageRepository;
-            _logger = logger;
         }
 
         // GET: Products
@@ -65,9 +62,9 @@ namespace SoftwareStore.Controllers
             ViewData["VendorId"] = new SelectList(_context.Set<Vendor>(), "Id", "VendorName");
             return View();
         }
-        
+
         // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // To protect from over posting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -114,7 +111,7 @@ namespace SoftwareStore.Controllers
         }
 
         // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
+        // To protect from over posting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -7,6 +7,7 @@ using Serilog;
 
 namespace SoftwareStore
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class Program
     {
         public static void Main(string[] args)
@@ -29,7 +30,7 @@ namespace SoftwareStore
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "The application failed to start.");
+                Log.Fatal(ex, "The application failed to start");
             }
             finally
             {
@@ -37,6 +38,7 @@ namespace SoftwareStore
             }
         }
 
+        // ReSharper disable once MemberCanBePrivate.Global
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)

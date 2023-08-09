@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,11 +13,11 @@ namespace SoftwareStore.Controllers
     public class AdminController : Controller
     {
         private readonly SoftwareStoreContext _context;
-        private readonly IRepository<ProductImage> _repository;
+        private readonly IRepository<ProductImage> _productImageRepository;
 
-        public AdminController(IRepository<ProductImage> repository, SoftwareStoreContext context)
+        public AdminController(IRepository<ProductImage> productImageRepository, SoftwareStoreContext context)
         {
-            _repository = repository;
+            _productImageRepository = productImageRepository;
             _context = context;
         }
 
@@ -35,7 +36,7 @@ namespace SoftwareStore.Controllers
 
         // POST: Admin/AddImage/{Pictures}
         [HttpPost]
-        public IActionResult AddImages(ProductImage prodImage, List<IFormFile> picture)
+        public async Task<IActionResult> AddImages(ProductImage prodImage, List<IFormFile> picture)
         {
             if (!IsAdmin())
             {
@@ -47,18 +48,15 @@ namespace SoftwareStore.Controllers
                 return View();
             }
 
-            var list = new List<ProductImage>();
             foreach (var item in picture)
             {
                 using var ms = new MemoryStream();
-                item.CopyTo(ms);
+                await item.CopyToAsync(ms);
                 ms.Seek(0, SeekOrigin.Begin);
                 var productImage = new ProductImage { ProductId = prodImage.ProductId, Picture = ms.ToArray() };
-                list.Add(productImage);
+                await _productImageRepository.AddAsync(productImage);
             }
 
-            _context.ProductImages.AddRange(list);
-            _context.SaveChanges();
             return RedirectToAction("Details", "Products", new { Id = prodImage.ProductId });
         }
 
